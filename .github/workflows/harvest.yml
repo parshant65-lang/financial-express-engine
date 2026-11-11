@@ -5,5 +5,20 @@ jobs:
   harvest:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: bash test_cf.sh
+      - name: Install Tor
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y tor
+          sudo service tor start
+          sleep 5
+
+      - name: Test Tor Connection
+        run: |
+          echo "Testing direct IP:"
+          curl -s https://api.ipify.org
+          echo ""
+          echo "Testing Tor IP:"
+          curl -s --socks5-hostname 127.0.0.1:9050 https://api.ipify.org
+          echo ""
+          echo "Testing Financial Express via Tor:"
+          curl -s -I --socks5-hostname 127.0.0.1:9050 "https://www.financialexpress.com/wp-json/wp/v2/posts?per_page=1" | head -n 8
