@@ -1,0 +1,32 @@
+name: Test FE Cloud Access
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-access:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test Financial Express from GitHub Actions Runner
+        run: |
+          python3 -c '
+          import urllib.request, urllib.error
+          headers = {
+              "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+              "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+              "Accept-Language": "en-US,en;q=0.9"
+          }
+          for name, url in [
+              ("Daily Sitemap", "https://www.financialexpress.com/sitemap.xml?yyyy=2020&mm=01&dd=15"),
+              ("WP-JSON REST API", "https://www.financialexpress.com/wp-json/wp/v2/posts?per_page=1"),
+              ("Article Page", "https://www.financialexpress.com/market/sensex-today-live-updates-share-market-news-bse-nse-nifty-it-auto-stock-indices-fno-18-november-2026-4389012/")
+          ]:
+              try:
+                  req = urllib.request.Request(url, headers=headers)
+                  with urllib.request.urlopen(req, timeout=10) as resp:
+                      print(f"[OK] {name}: Status {resp.status}, Bytes: {len(resp.read())}")
+              except urllib.error.HTTPError as e:
+                  print(f"[HTTP-ERR] {name}: {e.code} ({e.reason})")
+              except Exception as e:
+                  print(f"[ERR] {name}: {e}")
+          '
