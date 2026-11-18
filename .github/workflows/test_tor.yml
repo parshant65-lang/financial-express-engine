@@ -1,0 +1,25 @@
+name: Test Tor FE Access
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-tor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Tor
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y tor
+          # Configure Tor
+          sudo service tor start
+          sleep 5
+
+      - name: Test Tor Connection to Financial Express
+        run: |
+          echo "Testing Tor IP:"
+          curl -s --socks5-hostname 127.0.0.1:9050 https://api.ipify.org
+          echo -e "\n--- Testing Financial Express via Tor ---"
+          curl -s -I --socks5-hostname 127.0.0.1:9050 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" "https://www.financialexpress.com/sitemap.xml?yyyy=2020&mm=01&dd=15" | head -n 8
+          echo -e "\n--- Testing WP-JSON via Tor ---"
+          curl -s -I --socks5-hostname 127.0.0.1:9050 -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64)" "https://www.financialexpress.com/wp-json/wp/v2/posts?per_page=1" | head -n 8
